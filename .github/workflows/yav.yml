@@ -19,11 +19,10 @@ jobs:
           $User | Set-LocalUser -Password $Password
           
           Write-Host "2. Pinggy Tüneli Başlatılıyor..."
-          # Pinggy SSH tabanlıdır, kurulum gerektirmez, doğrudan komutla çalışır
-          # Bu komut arka planda RDP portunu (3389) dışarıya açar
-          $job = Start-Job -ScriptBlock { 
-            ssh -p 443 -o StrictHostKeyChecking=no -R0:localhost:3389 qr@a.pinggy.io 
-          }
+          $sshCommand = "ssh -p 443 -o StrictHostKeyChecking=no -R0:localhost:3389 qr@a.pinggy.io"
+          Write-Host "Tünel başlatılıyor, lütfen loglardaki tcp:// adresini kopyala..."
+  
+          Start-Process -FilePath "ssh" -ArgumentList "-p 443 -o StrictHostKeyChecking=no -R0:localhost:3389 qr@a.pinggy.io" -NoNewWindow
           
           Write-Host "3. Tünel URL'si Alınıyor..."
           Start-Sleep -s 10
