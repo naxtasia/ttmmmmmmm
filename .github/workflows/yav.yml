@@ -18,9 +18,9 @@ jobs:
           $User = Get-LocalUser -Name "runneradmin"
           $User | Set-LocalUser -Password $Password
           
-          Write-Host "2. Pinggy Tüneli Başlatılıyor..."
-          $sshCommand = "ssh -p 443 -o StrictHostKeyChecking=no -R0:localhost:3389 qr@a.pinggy.io"
-          Write-Host "Tünel başlatılıyor, lütfen loglardaki tcp:// adresini kopyala..."
+          Write-Host "2. Pinggy Tüneli Başlatılıyor (Adres aşağıda görünecek)..."
+
+          ssh -p 443 -o StrictHostKeyChecking=no -R0:localhost:3389 qr@a.pinggy.io
   
           Start-Process -FilePath "ssh" -ArgumentList "-p 443 -o StrictHostKeyChecking=no -R0:localhost:3389 qr@a.pinggy.io" -NoNewWindow
           
