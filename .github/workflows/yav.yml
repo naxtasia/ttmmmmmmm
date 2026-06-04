@@ -1,11 +1,11 @@
-name: XRDP (Pinggy Edition)
+name: XRDP (Cloudflare Tunnel)
 on: workflow_dispatch
 
 jobs:
   ignite-windows:
     runs-on: windows-latest
     steps:
-      - name: RDP ve Pinggy Kurulumu
+      - name: RDP ve Cloudflare Tunnel
         env:
           RDP_PASSWORD: ${{ secrets.RDP_PASSWORD }}
         run: |
@@ -18,20 +18,22 @@ jobs:
           $User = Get-LocalUser -Name "runneradmin"
           $User | Set-LocalUser -Password $Password
           
-          Write-Host "2. Pinggy Tüneli Başlatılıyor (Adres aşağıda görünecek)..."
-
-          ssh -p 443 -o StrictHostKeyChecking=no -R0:localhost:3389 qr@a.pinggy.io
-  
-          Start-Process -FilePath "ssh" -ArgumentList "-p 443 -o StrictHostKeyChecking=no -R0:localhost:3389 qr@a.pinggy.io" -NoNewWindow
+          Write-Host "2. Cloudflare Tunnel Kuruluyor..."
+          Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile cloudflared.exe
           
-          Write-Host "3. Tünel URL'si Alınıyor..."
-          Start-Sleep -s 10
-          # Çıktıyı loglardan takip edebilirsiniz, Pinggy URL'yi SSH bağlantısı üzerinden verir
+          Write-Host "3. Tünel Başlatılıyor (Lütfen URL'yi kopyalayın)..."
+          # Cloudflare'in 'trycloudflare' özelliği sayesinde kurulum gerektirmeden direkt URL alırız
+          Start-Process -FilePath ".\cloudflared.exe" -ArgumentList "tunnel --url rdp://localhost:3389" -NoNewWindow
+          
+          Write-Host "4. URL bekleniyor..."
+          Start-Sleep -s 20
           
           Write-Host "=================================================================="
-          Write-Host "🚀 MATRIX AKTİF (Pinggy)"
-          Write-Host "Log satırlarında 'tcp://...' şeklinde başlayan adresi kopyalayın."
+          Write-Host "🚀 MATRIX AKTİF (Cloudflare)"
+          Write-Host "Logların yukarısına bakın, 'https://...' ile biten"
+          Write-Host "yada 'trycloudflare.com' içeren bir URL göreceksiniz."
           Write-Host "KULLANICI  : runneradmin"
+          Write-Host "ŞİFRE      : (Secrets kısmına girdiğiniz şifre)"
           Write-Host "=================================================================="
           
           Start-Sleep -s 21600
