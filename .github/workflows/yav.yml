@@ -1,46 +1,38 @@
-name: XRDP (Playit.gg Edition)
+name: XRDP (Pinggy Edition)
 on: workflow_dispatch
 
 jobs:
   ignite-windows:
     runs-on: windows-latest
     steps:
-      - name: GPU Destekli Tam Kurulum ve Playit.gg
+      - name: RDP ve Pinggy Kurulumu
         env:
           RDP_PASSWORD: ${{ secrets.RDP_PASSWORD }}
         run: |
-          Write-Host "1. RDP ve Kimlik Ayarları Mühürleniyor..."
+          Write-Host "1. RDP Ayarları Yapılandırılıyor..."
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
           
-          Write-Host "2. Yönetici ve Şifre Revizyonu..."
           $Password = ConvertTo-SecureString $Env:RDP_PASSWORD -AsPlainText -Force
           $User = Get-LocalUser -Name "runneradmin"
           $User | Set-LocalUser -Password $Password
           
-          Write-Host "3. Playit.gg Altyapısı Kuruluyor..."
-          # Playit.gg'nin en son sürümünü indiriyoruz
-          Invoke-WebRequest https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-windows-x86_64.exe -OutFile playit.exe
+          Write-Host "2. Pinggy Tüneli Başlatılıyor..."
+          # Pinggy SSH tabanlıdır, kurulum gerektirmez, doğrudan komutla çalışır
+          # Bu komut arka planda RDP portunu (3389) dışarıya açar
+          $job = Start-Job -ScriptBlock { 
+            ssh -p 443 -o StrictHostKeyChecking=no -R0:localhost:3389 qr@a.pinggy.io 
+          }
           
-          Write-Host "4. Tünel Arka Planda Başlatılıyor..."
-          # Playit.gg'yi non-interactive modda çalıştırıyoruz
-          Start-Process -FilePath ".\playit.exe" -ArgumentList "--no-config" -WindowStyle Hidden
-          
-          Write-Host "5. GPU Boost (Mesa3D) Hazırlanıyor..."
-          $DesktopPath = [Environment]::GetFolderPath("Desktop")
-          Invoke-WebRequest "https://github.com/pal1000/mesa-dist-win/releases/download/24.0.7/mesa3d-24.0.7-release-msvc.7z" -OutFile mesa.7z
-          Move-Item mesa.7z "$DesktopPath\tmmmGPU_BOOST.7z"
-          
-          Write-Host "6. Bağlantı Bilgileri Bekleniyor (Biraz sürebilir)..."
-          Start-Sleep -s 20
+          Write-Host "3. Tünel URL'si Alınıyor..."
+          Start-Sleep -s 10
+          # Çıktıyı loglardan takip edebilirsiniz, Pinggy URL'yi SSH bağlantısı üzerinden verir
           
           Write-Host "=================================================================="
-          Write-Host "🚀 MATRIX AKTİF (Playit.gg)"
-          Write-Host "Bağlantı için Playit.gg panelinden 3389 portuna yönlendirme yapın."
+          Write-Host "🚀 MATRIX AKTİF (Pinggy)"
+          Write-Host "Log satırlarında 'tcp://...' şeklinde başlayan adresi kopyalayın."
           Write-Host "KULLANICI  : runneradmin"
-          Write-Host "ŞİFRE      : (Secrets kısmına girdiğiniz şifre)"
           Write-Host "=================================================================="
           
-          Write-Host "Matrix 6 Saat Boyunca Canlı..."
           Start-Sleep -s 21600
