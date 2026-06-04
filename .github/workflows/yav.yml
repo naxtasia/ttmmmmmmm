@@ -1,15 +1,15 @@
-name: XRDP (Cloudflare Tunnel)
+name: XRDP (Localtonet)
 on: workflow_dispatch
 
 jobs:
   ignite-windows:
     runs-on: windows-latest
     steps:
-      - name: RDP ve Cloudflare Tunnel
+      - name: RDP ve Localtonet Kurulumu
         env:
           RDP_PASSWORD: ${{ secrets.RDP_PASSWORD }}
         run: |
-          Write-Host "1. RDP Ayarları Yapılandırılıyor..."
+          # 1. RDP Ayarları
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
@@ -18,22 +18,19 @@ jobs:
           $User = Get-LocalUser -Name "runneradmin"
           $User | Set-LocalUser -Password $Password
           
-          Write-Host "2. Cloudflare Tunnel Kuruluyor..."
-          Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile cloudflared.exe
+          # 2. Localtonet İndirme
+          Invoke-WebRequest -Uri "https://localtonet.com/download/windows-x64" -OutFile localtonet.zip
+          Expand-Archive localtonet.zip -DestinationPath .
           
-          Write-Host "3. Tünel Başlatılıyor (Lütfen URL'yi kopyalayın)..."
-          # Cloudflare'in 'trycloudflare' özelliği sayesinde kurulum gerektirmeden direkt URL alırız
-          Start-Process -FilePath ".\cloudflared.exe" -ArgumentList "tunnel --url rdp://localhost:3389" -NoNewWindow
+          # 3. Arka Planda Başlatma (Auth token'ını localtonet sitesinden alıp environment variable olarak ekleyebilirsin)
+          # Eğer token girmek istemiyorsan, direkt şu şekilde çalıştırabilirsin:
+          Start-Process -FilePath ".\ltn.exe" -ArgumentList "http 3389" -NoNewWindow
           
-          Write-Host "4. URL bekleniyor..."
-          Start-Sleep -s 20
-          
-          Write-Host "=================================================================="
-          Write-Host "🚀 MATRIX AKTİF (Cloudflare)"
-          Write-Host "Logların yukarısına bakın, 'https://...' ile biten"
-          Write-Host "yada 'trycloudflare.com' içeren bir URL göreceksiniz."
-          Write-Host "KULLANICI  : runneradmin"
-          Write-Host "ŞİFRE      : (Secrets kısmına girdiğiniz şifre)"
-          Write-Host "=================================================================="
+          Write-Host "========================================================"
+          Write-Host "🚀 MATRIX AKTİF (Localtonet)"
+          Write-Host "https://localtonet.com adresine git,"
+          Write-Host "Tüneller sekmesinden bağlantını gör."
+          Write-Host "KULLANICI: runneradmin"
+          Write-Host "========================================================"
           
           Start-Sleep -s 21600
