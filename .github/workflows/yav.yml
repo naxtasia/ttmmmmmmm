@@ -8,6 +8,7 @@ jobs:
       - name: GPU Destekli Tam Kurulum
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          RDP_PASSWORD: ${{ secrets.RDP_PASSWORD }}
         run: |
           Write-Host "1. RDP ve Kimlik Ayarları Mühürleniyor..."
           # RDP Servislerini ve NLA'yı kapatiyoruz (Giris Garantisi!)
@@ -15,9 +16,8 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
           
-          Write-Host "2. Yönetici ve Şifre Revizyonu..."
-          # Sifreyi mühürle ve kullanıcıyı RDP grubuna zorla ekle
-          $Password = ConvertTo-SecureString "Xz9#vL2pP8$mK4qN" -AsPlainText -Force
+          Write-Host "Yönetici ve Şifre Revizyonu..."
+          $Password = ConvertTo-SecureString $Env:RDP_PASSWORD -AsPlainText -Force
           $User = Get-LocalUser -Name "runneradmin"
           $User | Set-LocalUser -Password $Password
           Add-LocalGroupMember -Group "Administrators" -Member "runneradmin" -ErrorAction SilentlyContinue
@@ -47,7 +47,7 @@ jobs:
           Write-Host "🎉 aMATRIX IS UNSTOPPABLE!"
           Write-Host "👉 RDP ADRESİ : $cleanUrl"
           Write-Host "👤 KULLANICI  : runneradmin"
-          Write-Host "🔑 ŞİFRE      : Xz9#vL2pP8$mK4qN"
+          Write-Host "🔑 ŞİFRE      : tm"
           Write-Host "=================================================================="
           
           Write-Host "Matrix 6 Saat Boyunca Canlı..."
